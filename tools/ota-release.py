@@ -47,9 +47,12 @@ def verify_apk(apk, android_abi):
     return {"size": apk.stat().st_size, "sha256": digest.hexdigest()}
 
 
+ALLOWED_REPOSITORIES = {"wobuhui666/TV", "kai0sec/TV"}
+
+
 def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
-    if not re.fullmatch(r"[\w.-]+/[\w.-]+", repository or ""):
-        raise ValueError("Expected a repository in owner/name form")
+    if repository not in ALLOWED_REPOSITORIES:
+        raise ValueError(f"OTA releases must belong to one of {sorted(ALLOWED_REPOSITORIES)}")
     if not re.fullmatch(r"build-[1-9][0-9]*(?:-[1-9][0-9]*)?", tag):
         raise ValueError("Expected a build-<run_id>-<run_attempt> release tag")
     if mode not in ("leanback", "mobile"):
