@@ -49,6 +49,11 @@ def verify_apk(apk, android_abi):
 
 ALLOWED_REPOSITORIES = {"wobuhui666/TV", "kai0sec/TV"}
 
+PACKAGE_NAMES = {
+    "wobuhui666/TV": "com.fongmi.android.tv",
+    "kai0sec/TV": "com.xiaojing.tv",
+}
+
 
 def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
     if repository not in ALLOWED_REPOSITORIES:
@@ -58,6 +63,7 @@ def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
     if mode not in ("leanback", "mobile"):
         raise ValueError("Unsupported application mode")
     root = Path(apk_root).resolve()
+    package_name = PACKAGE_NAMES[repository]
     expected = {f"{mode}-{abi}.apk": abi for abi in ABIS}
     assets = {}
     version = None
@@ -75,7 +81,7 @@ def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
             apk = (metadata_path.parent / filename).resolve()
             if not apk.is_relative_to(root):
                 raise ValueError("APK output escapes its build directory")
-            if metadata.get("applicationId") != PACKAGE_NAME:
+            if metadata.get("applicationId") != package_name:
                 raise ValueError("Unexpected Android package name")
             code, name = element.get("versionCode"), element.get("versionName")
             if type(code) is not int or not 555 < code <= MAX_VERSION_CODE:
@@ -96,7 +102,7 @@ def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
         "code": version[0],
         "name": version[1],
         "desc": desc,
-        "packageName": PACKAGE_NAME,
+        "packageName": package_name,
         "mode": mode,
         "assets": assets,
     }
