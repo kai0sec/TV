@@ -3,6 +3,7 @@ package com.fongmi.android.tv.server.process;
 import android.text.TextUtils;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.server.impl.Process;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.github.catvod.utils.Asset;
@@ -161,10 +162,6 @@ public class XProcess implements Process {
     }
 
     /* ═══════════ Wallpaper ═══════════ */
-
-    private File wallpaperFile() {
-        return new File(App.get().getFilesDir().getAbsolutePath() + "/wp");
-    }
 
     private File wallpaperFile() {
         return new File(App.get().getFilesDir(), "wallpaper_cache");
