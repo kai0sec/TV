@@ -136,14 +136,14 @@ function listFile(path, addHistory = false) {
             info = JSON.parse(res);
         } catch (e) {
             $('#loadingToast').hide();
-            warnToast('回應格式錯誤');
+            warnToast('响应格式错误');
             return;
         }
         const parent = info.parent;
         currentRoot = path;
         currentParent = parent;
         const array = info.files;
-        if (path === '' && array.length === 0) warnToast('可能沒有存儲權限');
+        if (path === '' && array.length === 0) warnToast('可能没有存储权限');
         $('#file_list').html('');
         if (parent !== '.') addFile(buildParentItem());
         array.forEach(node => {
@@ -155,7 +155,7 @@ function listFile(path, addHistory = false) {
     }).fail(function () {
         clearTimeout(loadingTimer);
         $('#loadingToast').hide();
-        warnToast('載入失敗');
+        warnToast('加载失败');
     });
 }
 
@@ -209,7 +209,7 @@ function confirmNewFolder(yes) {
         listFile(currentRoot);
     }).fail(function () {
         $('#loadingToast').hide();
-        warnToast('新增失敗');
+        warnToast('新建失败');
     });
 }
 
@@ -230,7 +230,7 @@ function confirmDelFolder(yes) {
         listFile(refreshPath);
     }).fail(function () {
         $('#loadingToast').hide();
-        warnToast('刪除失敗');
+        warnToast('删除失败');
     });
 }
 
@@ -249,7 +249,7 @@ function confirmDelFile(yes) {
         listFile(currentRoot);
     }).fail(function () {
         $('#loadingToast').hide();
-        warnToast('刪除失敗');
+        warnToast('删除失败');
     });
 }
 
@@ -261,11 +261,95 @@ function warnToast(msg) {
 }
 
 function showPanel(id) {
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 7; i++) {
         document.getElementById('panel' + i).classList.toggle('active', i === id);
         document.getElementById('tab' + i).classList.toggle('active', i === id);
     }
     if (id === 5 && document.getElementById('file_list').innerHTML === '') listFile('');
+    if (id === 7 && document.getElementById('wp_grid').innerHTML === '') loadWallpapers();
+}
+
+/* ═══════════ 网盘 Cookie ═══════════ */
+
+function loadCookie() {
+    const type = $('#cookie_type').val();
+    $.get('/cookie?type=' + type, function (res) {
+        try {
+            const info = typeof res === 'string' ? JSON.parse(res) : res;
+            $('#cookie_content').val(info.content || '');
+            $('#cookie_state').text(info.content ? '已配置（' + info.file + '）' : '未配置');
+        } catch (e) {
+            $('#cookie_state').text('读取失败');
+        }
+    }).fail(function () { $('#cookie_state').text('读取失败'); });
+}
+
+function saveCookie() {
+    const type = $('#cookie_type').val();
+    const content = $('#cookie_content').val();
+    $.post('/cookie', { type: type, content: content }, function (data) {
+        let msg = '已保存';
+        try {
+            const r = typeof data === 'string' ? JSON.parse(data) : data;
+            if (r.written !== undefined) msg = '已保存（写入 ' + r.written + ' 个位置）';
+        } catch (e) {}
+        $('#cookie_state').text(msg);
+    }).fail(function (xhr) {
+        $('#cookie_state').text('保存失败：' + (xhr.responseText || ''));
+    });
+}
+
+/* ═══════════ 背景主题 ═══════════ */
+
+function loadWallpapers() {
+    $.get('/wallpaper', function (res) {
+        let info;
+        try { info = typeof res === 'string' ? JSON.parse(res) : res; } catch (e) { return; }
+        const grid = $('#wp_grid').html('');
+        (info.presets || []).forEach(p => {
+            grid.append('<div class="wp-card" onclick="applyPreset(\'' + p.id + '\')"><img loading="lazy" src="/wallpaper/preset/' + p.id + '.jpg"/><span>' + p.name + '</span></div>');
+        });
+        if (info.custom) $('#wp_state').text('当前使用自定义背景');
+    }).fail(function () { $('#wp_state').text('加载失败'); });
+}
+
+function applyPreset(id) {
+    $('#wp_state').text('应用中...');
+    $.post('/wallpaper', { preset: id }, function (data) {
+        $('#wp_state').text(data === 'OK' ? '已应用，重启应用后生效更佳' : data);
+    }).fail(function (xhr) {
+        $('#wp_state').text('应用失败：' + (xhr.responseText || ''));
+    });
+}
+
+function uploadWallpaper() {
+    const files = $('#wp_uploader')[0].files;
+    if (files.length === 0) return;
+    const formData = new FormData();
+    formData.append('files-0', files[0]);
+    $('#wp_state').text('上传中...');
+    $.ajax({
+        url: '/wallpaper',
+        type: 'post',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#wp_state').text(data === 'OK' ? '已应用自定义背景' : data);
+            $('#wp_uploader').val('');
+        },
+        error: function (xhr) {
+            $('#wp_state').text('上传失败：' + (xhr.responseText || ''));
+        }
+    });
+}
+
+function resetWallpaper() {
+    $.post('/wallpaper', { action: 'reset' }, function (data) {
+        $('#wp_state').text(data === 'OK' ? '已恢复默认' : data);
+    }).fail(function (xhr) {
+        $('#wp_state').text('重置失败：' + (xhr.responseText || ''));
+    });
 }
 
 const tab = parseInt(new URLSearchParams(window.location.search).get('tab')) || 1;

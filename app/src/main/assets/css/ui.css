@@ -1,10 +1,10 @@
 :root {
-    --md-primary:                  #006C4C;
+    --md-primary:                  #00A1D6;
     --md-on-primary:               #FFFFFF;
-    --md-primary-container:        #89F7C6;
-    --md-on-primary-container:     #00210F;
-    --md-secondary-container:      #C8E6D5;
-    --md-on-secondary-container:   #082015;
+    --md-primary-container:        #C9EBF9;
+    --md-on-primary-container:     #00273A;
+    --md-secondary-container:      #DCF1FA;
+    --md-on-secondary-container:   #0E2A3A;
     --md-error:                    #BA1A1A;
     --md-on-error:                 #FFFFFF;
     --md-error-container:          #FFDAD6;
@@ -25,12 +25,12 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --md-primary:                  #6CDBA4;
-        --md-on-primary:               #003824;
-        --md-primary-container:        #005237;
-        --md-on-primary-container:     #89F7C6;
-        --md-secondary-container:      #354B40;
-        --md-on-secondary-container:   #CFE9D8;
+        --md-primary:                  #5FC3E7;
+        --md-on-primary:               #00344B;
+        --md-primary-container:        #004B69;
+        --md-on-primary-container:     #C9EBF9;
+        --md-secondary-container:      #294759;
+        --md-on-secondary-container:   #CDE9F8;
         --md-error:                    #FFB4AB;
         --md-on-error:                 #690005;
         --md-error-container:          #93000A;
@@ -462,3 +462,47 @@ html, body {
 
 @keyframes md-spin { to { transform: rotate(360deg); } }
 
+
+/* ═══ 小景扩展：网盘 Cookie / 背景主题 ═══ */
+.cookie-hint {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--md-on-surface-variant);
+    background: var(--md-surface-container-high);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+}
+textarea.md-input { resize: vertical; min-height: 110px; font-family: monospace; font-size: 12px; line-height: 1.5; }
+select.md-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23717970'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+.md-toolbar-center { justify-content: center; }
+.wp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.wp-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    aspect-ratio: 16/9;
+    background: var(--md-surface-container-high);
+    outline: 2px solid transparent;
+    transition: outline-color .15s, transform .15s;
+}
+.wp-card:active { transform: scale(.97); }
+.wp-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wp-card span {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #fff;
+    background: linear-gradient(transparent, rgba(0,0,0,.65));
+    text-align: center;
+}
+.wp-card:hover { outline-color: var(--md-primary); }
+.wp-state { display: block; text-align: center; font-size: 13px; color: var(--md-primary); min-height: 20px; margin-bottom: 10px; }
+@media (max-width: 480px) { .wp-grid { grid-template-columns: repeat(2, 1fr); } }
