@@ -48,8 +48,8 @@ def verify_apk(apk, android_abi):
 
 
 def build_manifest(apk_root, repository, tag, mode="leanback", desc=""):
-    if repository != "wobuhui666/TV":
-        raise ValueError("OTA releases must belong to wobuhui666/TV")
+    if not re.fullmatch(r"[\w.-]+/[\w.-]+", repository or ""):
+        raise ValueError("Expected a repository in owner/name form")
     if not re.fullmatch(r"build-[1-9][0-9]*(?:-[1-9][0-9]*)?", tag):
         raise ValueError("Expected a build-<run_id>-<run_attempt> release tag")
     if mode not in ("leanback", "mobile"):
