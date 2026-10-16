@@ -40,6 +40,24 @@ public class XProcess implements Process {
         put("diy", "diy_cookie.txt");
     }};
 
+    /**
+     * Guard 系 jar「配置中心」的 Cookie 存储 key（shared_prefs/NewWexFnw）。
+     * 播放解析实际读取此处，公共目录文件仅用于搜索聚合——两者都要写。
+     */
+    private static final Map<String, String> WEX_KEYS = new HashMap<String, String>() {{
+        put("quark", "Wex_quark_cookie");
+        put("uc", "Wex_uc_cookie");
+        put("baidu", "Wex_baidu_cookie");
+        put("thunder", "Wex_thunder_cookie");
+        put("guangya", "Wex_guangya_cookie");
+        put("pan123", "Wex_pan123_cookie");
+        put("pan115", "Wex_pan115_cookie");
+        put("tianyi", "Wex_pan189_cookie");
+        put("pan139", "Wex_pan139_cookie");
+        put("bili", "Wex_bili_cookie");
+        put("aliyun", "Wex_aliyun_cookie");
+    }};
+
     private static final Map<String, String> WALLPAPERS = new HashMap<String, String>() {{
         put("starry", "深空星河");
         put("aurora", "极光之夜");
@@ -96,7 +114,13 @@ public class XProcess implements Process {
             return ok(info.toString());
         }
         info.addProperty("file", fn);
-        String found = "";
+        String found = readWexPref(type);
+        if (!found.isEmpty()) {
+            info.addProperty("content", found);
+            info.addProperty("source", "wex");
+            return ok(info.toString());
+        }
+        found = "";
         for (File dir : cookieDirs()) {
             // 优先读点前缀版本（PanBaidu 播放读取的约定文件），回退普通名
             File f = new File(dir, "." + fn);
@@ -137,13 +161,43 @@ public class XProcess implements Process {
                 } catch (Throwable ignored) {
                 }
             }
+            boolean wex = writeWexPref(type, trimmed);
             JsonObject obj = new JsonObject();
             obj.addProperty("code", 0);
             obj.addProperty("written", written);
             obj.addProperty("allFiles", allFilesGranted());
+            obj.addProperty("wexSaved", wex);
             return ok(obj.toString());
         } catch (Throwable th) {
             return error(th.getMessage());
+        }
+    }
+
+    /** 同步写入 Guard 系 jar 的配置中心存储——播放解析读的是这里，而不是公共目录文件 */
+    private boolean writeWexPref(String type, String content) {
+        try {
+            String key = type == null ? null : WEX_KEYS.get(type);
+            if (key == null) return false;
+            android.content.SharedPreferences sp = App.get().getSharedPreferences("NewWexFnw", android.content.Context.MODE_PRIVATE);
+            android.content.SharedPreferences.Editor ed = sp.edit();
+            if (content == null || content.isEmpty()) ed.remove(key);
+            else ed.putString(key, content);
+            return ed.commit();
+        } catch (Throwable th) {
+            return false;
+        }
+    }
+
+    /** 读取 jar 配置中心里的 Cookie */
+    private String readWexPref(String type) {
+        try {
+            String key = type == null ? null : WEX_KEYS.get(type);
+            if (key == null) return "";
+            android.content.SharedPreferences sp = App.get().getSharedPreferences("NewWexFnw", android.content.Context.MODE_PRIVATE);
+            String v = sp.getString(key, "");
+            return v == null ? "" : v;
+        } catch (Throwable th) {
+            return "";
         }
     }
 
