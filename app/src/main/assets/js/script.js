@@ -288,15 +288,32 @@ function saveCookie() {
     const type = $('#cookie_type').val();
     const content = $('#cookie_content').val();
     $.post('/cookie', { type: type, content: content }, function (data) {
-        let msg = '已保存';
-        try {
-            const r = typeof data === 'string' ? JSON.parse(data) : data;
-            if (r.written !== undefined) msg = '已保存（写入 ' + r.written + ' 个位置）';
-        } catch (e) {}
-        $('#cookie_state').text(msg);
+        let r = {};
+        try { r = typeof data === 'string' ? JSON.parse(data) : data; } catch (e) {}
+        const written = r.written === undefined ? -1 : r.written;
+        const allFiles = r.allFiles !== false;
+        const hint = $('#cookie_hint');
+        if (allFiles && written >= 10) {
+            $('#cookie_state').text('已保存（写入 ' + written + ' 个位置）');
+            hint.hide();
+        } else if (allFiles) {
+            $('#cookie_state').text('已保存（写入 ' + written + ' 个位置）');
+            hint.hide();
+        } else {
+            $('#cookie_state').text('已保存，但写入不完整（' + written + ' 个位置）');
+            hint.html('⚠️ 未获得「所有文件访问」权限，Cookie 无法写入公共目录，网盘源会提示未配置 Cookie。'
+                + '<button class="md-btn md-btn-tonal cookie-warn-btn" onclick="requestPermission()">在电视上授权</button>')
+                .show();
+        }
     }).fail(function (xhr) {
         $('#cookie_state').text('保存失败：' + (xhr.responseText || ''));
     });
+}
+
+function requestPermission() {
+    $('#cookie_hint').html('已发送授权请求，请查看电视屏幕上的系统设置页，打开「允许访问所有文件」后返回。'
+        + '<button class="md-btn md-btn-tonal cookie-warn-btn" onclick="requestPermission()">再次触发</button>');
+    $.get('/action?do=permission', function () {});
 }
 
 /* ═══════════ 背景主题 ═══════════ */

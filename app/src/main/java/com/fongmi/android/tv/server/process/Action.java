@@ -57,7 +57,30 @@ public class Action implements Process {
             case "refresh" -> onRefresh(params);
             case "control" -> onControl(params);
             case "danmaku" -> onDanmaku(params);
+            case "permission" -> onPermission();
         }
+    }
+
+    /**
+     * 小景扩展：远程触发「所有文件访问」授权（电视端弹系统设置页）。
+     * 网盘 Cookie 必须落到公共目录 /storage/emulated/0/TVBox 才能被加壳 jar 读到。
+     */
+    private void onPermission() {
+        App.post(() -> {
+            try {
+                android.net.Uri uri = android.net.Uri.parse("package:" + App.get().getPackageName());
+                android.content.Intent app = new android.content.Intent(android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
+                app.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (app.resolveActivity(App.get().getPackageManager()) != null) {
+                    App.get().startActivity(app);
+                } else {
+                    android.content.Intent all = new android.content.Intent(android.provider.Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                    all.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                    App.get().startActivity(all);
+                }
+            } catch (Throwable ignored) {
+            }
+        });
     }
 
     private void onFile(Map<String, String> params) {

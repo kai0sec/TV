@@ -36,6 +36,19 @@ public class PermissionUtil {
         else post(fragment, () -> requestFile(PermissionX.init(fragment), requestAllFiles, callback));
     }
 
+    /**
+     * 小景扩展：启动时主动申请「所有文件访问」(MANAGE_EXTERNAL_STORAGE)。
+     * 网盘 Cookie 需要写入 /storage/emulated/0/TVBox 公共目录，被加壳 jar 读取；
+     * 未授权时只能写进私有目录，导致网盘源提示「还没有配置 Cookie」。
+     */
+    public static void requestAllFiles(FragmentActivity activity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return;
+        if (Environment.isExternalStorageManager()) return;
+        if (!canRequestAllFiles(activity)) return;
+        post(activity, () -> requestFile(PermissionX.init(activity), true, allGranted -> {
+        }));
+    }
+
     public static void requestNotify(FragmentActivity activity) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
         if (isGranted(activity, PermissionX.permission.POST_NOTIFICATIONS)) return;

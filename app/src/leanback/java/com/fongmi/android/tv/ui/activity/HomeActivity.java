@@ -161,6 +161,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         mClock = Clock.create(mBinding.clock);
         mBinding.progressLayout.showProgress();
         PermissionUtil.requestNotify(this);
+        PermissionUtil.requestAllFiles(this);
         DLNARendererService.start(this);
         Updater.create().start(this);
         setRecyclerView();

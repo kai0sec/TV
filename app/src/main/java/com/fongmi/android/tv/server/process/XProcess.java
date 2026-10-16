@@ -140,9 +140,20 @@ public class XProcess implements Process {
             JsonObject obj = new JsonObject();
             obj.addProperty("code", 0);
             obj.addProperty("written", written);
+            obj.addProperty("allFiles", allFilesGranted());
             return ok(obj.toString());
         } catch (Throwable th) {
             return error(th.getMessage());
+        }
+    }
+
+    /** 是否已获得「所有文件访问」——决定公共目录 /sdcard/TVBox 能否写入 */
+    private boolean allFilesGranted() {
+        try {
+            return android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R
+                    || android.os.Environment.isExternalStorageManager();
+        } catch (Throwable th) {
+            return false;
         }
     }
 
